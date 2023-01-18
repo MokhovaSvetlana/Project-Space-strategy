@@ -1,3 +1,5 @@
+from random import sample, randint
+
 from scales import SatietyScale, FuelScale
 from resource import Resource
 from settings import RESOURCES_FOR_SAFE_PLANETS, RESOURCES_FOR_MIDDLE_PLANETS, RESOURCES_FOR_DANGEROUS_PLANETS
@@ -11,6 +13,8 @@ class Player:
         fuel = 50
         self.scale_satiety = SatietyScale(satiety)
         self.scale_fuel = FuelScale(fuel)
+        self.resources_for_repair = list()
+        self._generate_resources_for_repair()
         self.inventory = list()
 
     def add_resources(self, resources):
@@ -46,5 +50,19 @@ class Player:
         ress = []
         for res in RESOURCES_FOR_SAFE_PLANETS + RESOURCES_FOR_MIDDLE_PLANETS + RESOURCES_FOR_DANGEROUS_PLANETS:
             ress.append(Resource(*res))
-            ress[-1].quantity = 5
+            ress[-1].quantity = 25
         self.add_resources(ress)
+
+    def _generate_resources_for_repair(self):
+        for res in sample(RESOURCES_FOR_DANGEROUS_PLANETS, k=4):
+            resource = Resource(*res)
+            resource.quantity = randint(2, 6)
+            self.resources_for_repair.append(resource)
+        for res in sample(RESOURCES_FOR_MIDDLE_PLANETS, k=5):
+            resource = Resource(*res)
+            resource.quantity = randint(5, 10)
+            self.resources_for_repair.append(resource)
+        for res in sample(RESOURCES_FOR_SAFE_PLANETS, k=3):
+            resource = Resource(*res)
+            resource.quantity = randint(20, 25)
+            self.resources_for_repair.append(resource)

@@ -55,7 +55,7 @@ class Resource:
         return info
 
 
-def read_all_resources():
+def _read_all_resources():
     resources_for_safe_planets = []
     resources_for_middle_planets = []
     resources_for_dangerous_planets = []

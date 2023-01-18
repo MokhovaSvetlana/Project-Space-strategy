@@ -12,7 +12,7 @@ class Circles(pygame.sprite.Sprite):
 
     def __init__(self, max_radius, k_circles, step):
         super().__init__()
-        self.width = 2
+        self.width = 1
         self.image = pygame.Surface((2 * max_radius, 2 * max_radius))
         for i in range(k_circles):
             pygame.draw.circle(self.image, 'white', (max_radius, max_radius), max_radius - i * step, self.width)
@@ -179,7 +179,7 @@ class Planet(pygame.sprite.Sprite):
 
         screen.blit(surface, (x, y))
         self.resources_updating = True
-        self.time_for_update = 60
+        self.time_for_update = 30
         pygame.time.set_timer(self.event, 1000)
 
     # def update(self):   # Реализация движения по орбите

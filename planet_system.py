@@ -101,11 +101,12 @@ class PlanetSystemSprite(pygame.sprite.Sprite):
         screen.blit(surface, (x + 10, y + 10))
 
 
-class LevelOfDanger(Enum):
+class PlanetType(Enum):
 
     SAFE = 1
     MIDDLE = 2
     DANGEROUS = 3
+    HABITABLE = 4
 
 
 class PlanetSystem:
@@ -136,9 +137,9 @@ class PlanetSystem:
         middle_planets = (self.k_planets - dangerous_planets) // 2
         safe_planets = self.k_planets - dangerous_planets - middle_planets
         self.levels_planets = list()
-        self.levels_planets += [LevelOfDanger.DANGEROUS] * dangerous_planets
-        self.levels_planets += [LevelOfDanger.MIDDLE] * middle_planets
-        self.levels_planets += [LevelOfDanger.SAFE] * safe_planets
+        self.levels_planets += [PlanetType.DANGEROUS] * dangerous_planets
+        self.levels_planets += [PlanetType.MIDDLE] * middle_planets
+        self.levels_planets += [PlanetType.SAFE] * safe_planets
         random.shuffle(self.levels_planets)
 
         for ix, pl in enumerate(self.levels_planets):
@@ -154,14 +155,14 @@ class PlanetSystem:
             self.planet_sprites.add(pl)
 
     def choice_of_resources(self, level_of_danger, *level):   # генерация ресурсов и расчет шанса на успех (больше ресурсов - меньше шанс)
-        if level_of_danger == LevelOfDanger.DANGEROUS.value:
+        if level_of_danger == PlanetType.DANGEROUS.value:
             num_of_resources = random.randint(3, 5)
             #k_resource --- ?
             chance_of_success = 100 - num_of_resources * 15    # 25 - 55 %
             resources = random.sample(RESOURCES_FOR_DANGEROUS_PLANETS, num_of_resources)
             fuel_level = random.randint(18, 25)
             return resources, chance_of_success, fuel_level
-        elif level_of_danger == LevelOfDanger.MIDDLE.value:
+        elif level_of_danger == PlanetType.MIDDLE.value:
             num_of_resources = random.randint(4, 6)
             chance_of_success = 100 - num_of_resources * 6      # 64 - 76 %
             resources = random.sample(RESOURCES_FOR_MIDDLE_PLANETS, num_of_resources)
