@@ -1,11 +1,20 @@
 import pygame
 import random
+from enum import Enum
 
 from resource import Resource
 from settings import w, h, menu_h
 from settings import FONT
 from settings import n_planet
 h -= menu_h
+
+
+class PlanetType(Enum):
+
+    SAFE = 1
+    MIDDLE = 2
+    DANGEROUS = 3
+    HABITABLE = 4
 
 
 class Circles(pygame.sprite.Sprite):
@@ -35,11 +44,11 @@ class Planet(pygame.sprite.Sprite):
         self.image = pygame.Surface((2 * radius_of_planet, 2 * radius_of_planet))
         pygame.draw.circle(self.image, 'grey', (radius_of_planet, radius_of_planet), radius_of_planet)
         self.rect = pygame.Rect(x - radius_of_planet, y - radius_of_planet, 2 * radius_of_planet, 2 * radius_of_planet)
-        self.resources_updating = False   #
-        self.time_for_update = 0          #
-        n_planet[0] += 1                  #
-        self.n = n_planet[0]              #
-        self.event = pygame.USEREVENT + self.n      #
+        self.resources_updating = False
+        self.time_for_update = 0
+        n_planet[0] += 1
+        self.n = n_planet[0]
+        self.event = pygame.USEREVENT + self.n
 
         self.width_of_line_success = 0
         self.gr = 0
@@ -50,20 +59,24 @@ class Planet(pygame.sprite.Sprite):
             return True, x_center, self.rect.y
         return False, None, None
 
-    def generating_information_about_planet(self, resources: dict, level, chance, fuel_level):  # k_resource
+    def generating_information_about_planet(self, resources: dict, type, chance, fuel_level):
         self.resources = dict()
         for resource in resources:
             res = Resource(*resource)
             self.resources[res.title] = res
-            self.resources[res.title].quantity = 1  # k_resource
-        self.danger_level = level
-        self.info = {'Level of danger': self.danger_level}
-        self.chance = chance
-        self.info['Chance of success'] = f"{self.chance}%"
-        self.fuel_level = fuel_level
-        self.info['Need fuel'] = f"{self.fuel_level}"
-        for position in self.resources:
-            self.info[position] = self.resources[position].quantity
+            self.resources[res.title].quantity = 1
+
+        self.type = type
+        if type == PlanetType.HABITABLE:
+            self.info = ['HABITABLE PLANET', 'Сome to planet to trading']
+        else:
+            self.info = {'Level of danger': self.type.name}
+            self.chance = chance
+            self.info['Chance of success'] = f"{self.chance}%"
+            self.fuel_level = fuel_level
+            self.info['Need fuel'] = f"{self.fuel_level}"
+            for position in self.resources:
+                self.info[position] = self.resources[position].quantity
 
     def show_info_about_planet(self, x, y, fuel_occupancy, screen):
         if self.resources_updating:
@@ -92,13 +105,14 @@ class Planet(pygame.sprite.Sprite):
         font = pygame.font.Font(None, FONT)
         text_coord = 2
         for line in self.info:
-            if line == 'Need fuel' and fuel_occupancy >= int(self.info[line]):  # контроллер?
+            if line == 'Need fuel' and fuel_occupancy >= int(self.info[line]):
                 color = 'green'
             elif line == 'Need fuel' and fuel_occupancy < int(self.info[line]):
                 color = 'red'
             else:
                 color = 'white'
-            text = font.render(f'{line}: {self.info[line]}', True, color)
+            text = font.render(f'{line}: {self.info[line]}' if self.type is not PlanetType.HABITABLE else line,
+                               True, color)
             intro_rect = text.get_rect()
             text_coord += 3
             intro_rect.top = text_coord
@@ -107,10 +121,10 @@ class Planet(pygame.sprite.Sprite):
             surface.blit(text, intro_rect)
 
         pygame.draw.rect(surface, 'white', (1, 1, surface.get_width() - 1, surface.get_height() - 1), 1)
-
-        x = min(x, w - self.LARGEST_INSCRIPTION)
-        y = min(y, h - len(self.info) * FONT)
-        screen.blit(surface, (x, y))
+        if x is not None:
+            x = min(x, w - self.LARGEST_INSCRIPTION)
+            y = min(y, h - len(self.info) * FONT)
+            screen.blit(surface, (x, y))
 
     def mission_calculation(self):
         variants = [1] * self.chance + [0] * (100 - self.chance)
@@ -119,7 +133,6 @@ class Planet(pygame.sprite.Sprite):
         return result_of_mission
 
     def treatment_of_mission(self, fps, screen):
-
         self.v = 100 // fps
 
         surface = pygame.Surface((120, 40))
@@ -179,9 +192,5 @@ class Planet(pygame.sprite.Sprite):
 
         screen.blit(surface, (x, y))
         self.resources_updating = True
-        self.time_for_update = 30
+        self.time_for_update = 10
         pygame.time.set_timer(self.event, 1000)
-
-    # def update(self):   # Реализация движения по орбите
-    #
-    #

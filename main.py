@@ -2,7 +2,8 @@ import pygame
 from random import randint
 
 from planet_system import PlanetSystemSprite
-from statuses import Statuses, MainMenu, PlanetSystemStatus, SelectionPlanetSystemsStatus, InventoryStatus, RepairStatus, EndOfGame, RulesScreen
+from statuses import Statuses, MainMenu, PlanetSystemStatus, SelectionPlanetSystemsStatus, \
+    InventoryStatus, RepairStatus, EndOfGame, RulesScreen, SellResourcesStatus, BuyResourcesStatus
 from player import Player
 from settings import w, h, menu_h
 
@@ -14,7 +15,7 @@ class Game:
     def __init__(self):
 
         pygame.init()
-        pygame.display.set_caption("⁖⁘⁙ Space ⁙⁖⁘")
+        pygame.display.set_caption("⁖⁘⁙ Space Researcher ⁙⁖⁘")
 
         self.screen = pygame.display.set_mode((w, h))
         self.fps = 60
@@ -32,6 +33,10 @@ class Game:
                 self.running = False
             elif new_status == Statuses.SelectionPlanetSystems:
                 self.status = SelectionPlanetSystemsStatus(*self.status_data, self.systems, self.player)
+            elif new_status == Statuses.SellResources:
+                self.status = SellResourcesStatus(*self.status_data, self.player)
+            elif new_status == Statuses.BuyResources:
+                self.status = BuyResourcesStatus(*self.status_data, self.player)
             elif new_status[0] == Statuses.PlanetSystem:
                 if new_status[1] is None:
                     self.create_game()
@@ -50,19 +55,22 @@ class Game:
                 self.status = RulesScreen(*self.status_data)
 
     def create_game(self):
+        self.habitalbe_systems = 3
         self.systems = pygame.sprite.Group()
-        self.player = Player(_generate_new_system(self.systems).planet_system)
+        self.player = Player(_generate_new_system(self.systems, is_habitable=True).planet_system)
+        self.habitalbe_systems -= 1
         for i in range(self.NUM_SYSTEMS - 1):
-            _generate_new_system(self.systems)
+            _generate_new_system(self.systems, is_habitable=self.habitalbe_systems > 0)
+            self.habitalbe_systems -= 1
         self.status = PlanetSystemStatus(*self.status_data, self.player)
 
 
-def _generate_new_system(systems):
+def _generate_new_system(systems, is_habitable=False):
     system = None
     while system is None:
         radius = randint(15, 30)
         x, y = randint(0, w - 2 * radius), randint(menu_h, h - 2 * radius)
-        system = PlanetSystemSprite(x, y, radius)
+        system = PlanetSystemSprite(x, y, radius, is_habitable)
         if pygame.sprite.spritecollideany(system, systems) or \
                 system.rect.bottom > h or system.rect.right > w:
             system = None

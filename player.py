@@ -5,6 +5,7 @@ from resource import Resource
 from settings import RESOURCES_FOR_SAFE_PLANETS, RESOURCES_FOR_MIDDLE_PLANETS, RESOURCES_FOR_DANGEROUS_PLANETS
 
 
+
 class Player:
     def __init__(self, system):
         self.system = system
@@ -16,6 +17,8 @@ class Player:
         self.resources_for_repair = list()
         self._generate_resources_for_repair()
         self.inventory = list()
+        self.add_all_res()
+        self.money = 0
 
     def add_resources(self, resources):
         for res in resources:
@@ -24,7 +27,7 @@ class Player:
                     resi.quantity += res.quantity
                     break
             else:
-                self.inventory.append(Resource(res.title, res.type, res.utility, res.image))
+                self.inventory.append(Resource(res.title, res.type, res.utility, res.image, res.money))
                 self.inventory[-1].quantity = res.quantity
                 self.inventory.sort(key=lambda res: res.title)
 
@@ -45,6 +48,12 @@ class Player:
             if res_i.title == resource.title:
                 return res_i.quantity >= resource.quantity
         return False
+
+    def get_resource(self, resource):
+        for res_i in self.inventory:
+            if res_i.title == resource.title:
+                return res_i
+        return None
 
     def add_all_res(self):
         ress = []

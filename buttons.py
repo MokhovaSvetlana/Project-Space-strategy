@@ -2,6 +2,7 @@ import pygame
 from abc import ABC
 from math import sin, cos, radians
 from settings import FONT
+from resource import TypesResources
 
 
 class Button(pygame.sprite.Sprite, ABC):
@@ -180,3 +181,50 @@ class ReturnToMenuButton(Button):
         self.image.blit(text, intro_rect)
         pygame.draw.rect(self.image, (100, 100, 100), (1, 1, self.image.get_width() - 2, self.image.get_height() - 2), 1)
         screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class TradeResourceButton(Button):
+    def __init__(self, pos, size, resource, is_selling=True):
+        super().__init__(pos, size)
+        self.resource = resource
+        self.is_selling = is_selling
+        if is_selling:
+            self.money = self.resource.money // 2
+        else:
+            self.money = self.resource.money * 2
+
+    def draw(self, screen, player_res):
+        if not self.is_selling:
+            color = "white"
+        else:
+            color = "green" if player_res is not None else "red"
+        self.image.fill("black")
+        strings = [self.resource.title, f"Quantity: {player_res.quantity if player_res is not None else 0}",
+                   f"Money: {self.money}"]
+        font = pygame.font.Font(None, FONT + 5)
+        text_coord = 2
+        for line in strings:
+            text = font.render(line, True, color)
+            intro_rect = text.get_rect()
+            text_coord += 3
+            intro_rect.top = text_coord
+            intro_rect.x = 3
+            text_coord += intro_rect.height
+            self.image.blit(text, intro_rect)
+
+        pygame.draw.rect(self.image, color, (0, 0, *self.rect.size), width=1)
+        screen.blit(self.image, self.rect.topleft)
+
+
+class TradeStatusButton(Button):
+    def __init__(self, pos, size, is_selling=True):
+        super().__init__(pos, size)
+        font = pygame.font.Font(None, FONT + 5)
+        self.text = font.render("sell" if is_selling else "buy", True, "white")
+
+    def draw(self, screen):
+        self.image.fill("black")
+        color = "white"
+        self.image.blit(self.text, (5, self.rect.h // 2 - self.text.get_height() // 2))
+        pygame.draw.rect(self.image, color, (0, 0, *self.rect.size), width=1)
+        screen.blit(self.image, self.rect.topleft)

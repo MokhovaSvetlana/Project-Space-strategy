@@ -1,8 +1,7 @@
 import pygame
-import random
-from enum import Enum
+from random import sample, randint, shuffle, randrange
 
-from planets import Circles, Planet
+from planets import Circles, Planet, PlanetType
 from resource import Resource
 from settings import w, h, menu_h, \
     RESOURCES_FOR_SAFE_PLANETS, \
@@ -16,12 +15,12 @@ class PlanetSystemSprite(pygame.sprite.Sprite):
     RESOURCES_FONT = 15
     LARGEST_INSCRIPTION = 155
 
-    def __init__(self, x, y, radius):
+    def __init__(self, x, y, radius,  is_habitable):
         super().__init__()
         self.font = pygame.font.Font(None, FONT + 10)
         self.title = self.generate_title()
         self.text = self.font.render(self.title, True, "white")
-        self.planet_system = PlanetSystem(self.title)
+        self.planet_system = PlanetSystem(self.title, is_habitable)
         self.radius = radius
         self.indent = 10
         self.rect = pygame.Rect(x, y, *self.get_size())
@@ -43,9 +42,9 @@ class PlanetSystemSprite(pygame.sprite.Sprite):
 
     @staticmethod
     def generate_title():
-        title = chr(random.randrange(ord("A"), ord("Z") + 1))
+        title = chr(randrange(ord("A"), ord("Z") + 1))
         title += "-"
-        title += "".join(str(random.randint(0, 9)) for _ in range(3))
+        title += "".join(str(randint(0, 9)) for _ in range(3))
         return title
 
     def get_size(self):
@@ -58,8 +57,8 @@ class PlanetSystemSprite(pygame.sprite.Sprite):
 
     def generate_necessary_resources(self):
         self.necessary_resources = list()
-        for res in random.sample(RESOURCES_FOR_DANGEROUS_PLANETS, 2) + \
-                random.sample(RESOURCES_FOR_MIDDLE_PLANETS, 3):
+        for res in sample(RESOURCES_FOR_DANGEROUS_PLANETS, 2) + \
+                sample(RESOURCES_FOR_MIDDLE_PLANETS, 3):
             self.necessary_resources.append(Resource(*res))
             self.necessary_resources[-1].quantity = 1
 
@@ -101,52 +100,52 @@ class PlanetSystemSprite(pygame.sprite.Sprite):
         screen.blit(surface, (x + 10, y + 10))
 
 
-class PlanetType(Enum):
-
-    SAFE = 1
-    MIDDLE = 2
-    DANGEROUS = 3
-    HABITABLE = 4
-
-
 class PlanetSystem:
 
     INTERNAL_RADIUS = 60
 
-    def __init__(self, title):
+    def __init__(self, title,  is_habitable):
+        self.title = title
         self.planets = list()
         self.planet_radius = 10
         self.step_for_circle = 30
-        self.k_planets = random.randint(5, (min(w, h) - 100) // 2 // self.step_for_circle)
+        self.k_planets = randint(5, (min(w, h) - 100) // 2 // self.step_for_circle)
         self.max_circle_radius = self.INTERNAL_RADIUS + (self.k_planets - 1) * self.step_for_circle
 
         self.all_sprites = pygame.sprite.Group()
         self.planet_sprites = pygame.sprite.Group()
         self.all_sprites.add(Circles(self.max_circle_radius, self.k_planets, self.step_for_circle))
-        self.generate_planets()
+        self.generate_planets(is_habitable)
         for sprite in self.all_sprites:
             sprite.rect.y += menu_h
+        if is_habitable:
+            self.generate_resources_for_trade()
 
-        self.title = title
+        self.TRADEUBDATE = pygame.USEREVENT + 100
+        pygame.time.set_timer(self.TRADEUBDATE, 60000)
 
     def __repr__(self):
         return self.title
 
-    def generate_planets(self, *level):  # level - на первых этапах больше "safe planets"?
+    def generate_planets(self, is_habitable):
         dangerous_planets = self.k_planets // 4
         middle_planets = (self.k_planets - dangerous_planets) // 2
         safe_planets = self.k_planets - dangerous_planets - middle_planets
         self.levels_planets = list()
         self.levels_planets += [PlanetType.DANGEROUS] * dangerous_planets
         self.levels_planets += [PlanetType.MIDDLE] * middle_planets
-        self.levels_planets += [PlanetType.SAFE] * safe_planets
-        random.shuffle(self.levels_planets)
+        if is_habitable:
+            self.levels_planets += [PlanetType.SAFE] * (safe_planets - 1)
+            self.levels_planets += [PlanetType.HABITABLE]
+        else:
+            self.levels_planets += [PlanetType.SAFE] * safe_planets
+        shuffle(self.levels_planets)
 
         for ix, pl in enumerate(self.levels_planets):
             planet = Planet(ix + 2, self.planet_radius, self.step_for_circle)
             self.all_sprites.add(planet)
-            resources, chance, fuel_level = self.choice_of_resources(pl.value)
-            planet.generating_information_about_planet(resources, pl.name, chance, fuel_level)
+            resources, chance, fuel_level = self.choice_of_resources(pl)
+            planet.generating_information_about_planet(resources, pl, chance, fuel_level)
             self.planets.append(planet)
         self.add_planets()
 
@@ -154,28 +153,38 @@ class PlanetSystem:
         for pl in self.planets:
             self.planet_sprites.add(pl)
 
-    def choice_of_resources(self, level_of_danger, *level):   # генерация ресурсов и расчет шанса на успех (больше ресурсов - меньше шанс)
-        if level_of_danger == PlanetType.DANGEROUS.value:
-            num_of_resources = random.randint(3, 5)
-            #k_resource --- ?
+    def choice_of_resources(self, type):
+        if type == PlanetType.DANGEROUS:
+            num_of_resources = randint(3, 5)
             chance_of_success = 100 - num_of_resources * 15    # 25 - 55 %
-            resources = random.sample(RESOURCES_FOR_DANGEROUS_PLANETS, num_of_resources)
-            fuel_level = random.randint(18, 25)
+            resources = sample(RESOURCES_FOR_DANGEROUS_PLANETS, num_of_resources)
+            fuel_level = randint(18, 25)
             return resources, chance_of_success, fuel_level
-        elif level_of_danger == PlanetType.MIDDLE.value:
-            num_of_resources = random.randint(4, 6)
+        elif type == PlanetType.MIDDLE:
+            num_of_resources = randint(4, 6)
             chance_of_success = 100 - num_of_resources * 6      # 64 - 76 %
-            resources = random.sample(RESOURCES_FOR_MIDDLE_PLANETS, num_of_resources)
-            fuel_level = random.randint(7, 11)
+            resources = sample(RESOURCES_FOR_MIDDLE_PLANETS, num_of_resources)
+            fuel_level = randint(7, 11)
             return resources, chance_of_success, fuel_level
-        else:
-            num_of_resources = random.randint(4, 6)
+        elif type == PlanetType.SAFE:
+            num_of_resources = randint(4, 6)
             chance_of_success = 100 - num_of_resources * 4      # 76 - 84 %
-            resources = random.sample(RESOURCES_FOR_SAFE_PLANETS, num_of_resources)
-            fuel_level = random.randint(3, 6)
+            resources = sample(RESOURCES_FOR_SAFE_PLANETS, num_of_resources)
+            fuel_level = randint(3, 6)
             return resources, chance_of_success, fuel_level
+            shuffle(self.levels_planets)
+        elif type == PlanetType.HABITABLE:
+            return [], 100, 0
+
+    def generate_resources_for_trade(self):
+        self.resources_for_sell = [Resource(*res, k=1) for res in sample(RESOURCES_FOR_DANGEROUS_PLANETS, k=3) +
+                sample(RESOURCES_FOR_MIDDLE_PLANETS, k=2) +
+                sample(RESOURCES_FOR_SAFE_PLANETS, k=randint(1, 2))]
+        self.resources_for_buy = [Resource(*res, k=1) for res in sample(RESOURCES_FOR_DANGEROUS_PLANETS, k=randint(1, 2)) +
+                sample(RESOURCES_FOR_MIDDLE_PLANETS, k=2) +
+                sample(RESOURCES_FOR_SAFE_PLANETS, k=3)]
 
     def show_title(self, screen):
         font = pygame.font.Font(None, menu_h)
         text = font.render(self.title, True, "white")
-        screen.blit(text, (w - text.get_width(), 0))
+        screen.blit(text, (w - text.get_width() - 5, 5))

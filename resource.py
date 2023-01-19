@@ -10,12 +10,13 @@ class TypesResources(Enum):
 
 
 class Resource:
-    def __init__(self, title, type, utility, image_path):
+    def __init__(self, title, type, utility, image_path, money, k=0):
         self.title = title
-        self.quantity = 0
+        self.quantity = k
         self.type = type
         self.utility = utility
         self.image = image_path
+        self.money = money
 
     def __repr__(self):
         return "<R>" + self.title + f" <{self.quantity}>"
@@ -68,7 +69,7 @@ def _read_all_resources():
         next(reader)
         for row in reader:
 
-            res = (row[1], type_of_resource[row[2]], int(row[3]), row[4])
+            res = (row[1], type_of_resource[row[2]], int(row[3]), row[4], int(row[5]))
             if row[0] == 'save':
                 resources_for_safe_planets.append(res)
             elif row[0] == 'middle':

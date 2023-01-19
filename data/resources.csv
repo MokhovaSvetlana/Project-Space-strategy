@@ -1,21 +1,21 @@
-level_of_danger;title;type;utility;image_path
-save;blue stem;plant;4;data/images/blue_stem.jpg
-save;blue leaf;plant;5;data/images/blue_leaf.jpg
-save;blue fruit;plant;6;data/images/blue_fruit.jpg
-middle;yellow stem;plant;6;data/images/yellow_stem.jpg
-middle;yellow leaf;plant;7;data/images/yellow_leaf.jpg
-middle;yellow fruit;plant;8;data/images/yellow_fruit.jpg
-dangerous;red stem;plant;6;data/images/red_stem.jpg
-dangerous;red leaf;plant;7;data/images/red_leaf.jpg
-dangerous;red fruit;plant;8;data/images/red_fruit.jpg
-save;blue stone;fossil;7;data/images/blue_stone.jpg
-save;blue fuel;fossil;10;data/images/blue_fuel.jpg
-middle;yellow stone;fossil;7;data/images/yellow_stone.jpg
-middle;yellow fuel;fossil;10;data/images/yellow_fuel.jpg
-dangerous;red stone;fossil;7;data/images/red_stone.jpg
-dangerous;red fuel;fossil;10;data/images/red_fuel.jpg
-save;amethyst;jewel;0;data/images/amethyst.jpg
-middle;sapphire;jewel;0;data/images/sapphire.jpg
-middle;emerald;jewel;0;data/images/emerald.jpg
-dangerous;diamond;jewel;0;data/images/diamond.jpg
-dangerous;ruby;jewel;0;data/images/ruby.jpg
+level_of_danger;title;type;utility;image_path;money
+save;blue stem;plant;4;data/images/blue_stem.jpg;2
+save;blue leaf;plant;5;data/images/blue_leaf.jpg;2
+save;blue fruit;plant;6;data/images/blue_fruit.jpg;2
+middle;yellow stem;plant;8;data/images/yellow_stem.jpg;5
+middle;yellow leaf;plant;9;data/images/yellow_leaf.jpg;5
+middle;yellow fruit;plant;10;data/images/yellow_fruit.jpg;5
+dangerous;red stem;plant;12;data/images/red_stem.jpg;10
+dangerous;red leaf;plant;13;data/images/red_leaf.jpg;10
+dangerous;red fruit;plant;14;data/images/red_fruit.jpg;10
+save;blue stone;fossil;7;data/images/blue_stone.jpg;2
+save;blue fuel;fossil;10;data/images/blue_fuel.jpg;2
+middle;yellow stone;fossil;15;data/images/yellow_stone.jpg;5
+middle;yellow fuel;fossil;19;data/images/yellow_fuel.jpg;5
+dangerous;red stone;fossil;24;data/images/red_stone.jpg;10
+dangerous;red fuel;fossil;28;data/images/red_fuel.jpg;10
+save;amethyst;jewel;0;data/images/amethyst.jpg;5
+middle;sapphire;jewel;0;data/images/sapphire.jpg;11
+middle;emerald;jewel;0;data/images/emerald.jpg;11
+dangerous;diamond;jewel;0;data/images/diamond.jpg;20
+dangerous;ruby;jewel;0;data/images/ruby.jpg;20
